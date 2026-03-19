@@ -1,91 +1,93 @@
-import os
-import requests
 import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
-MODEL_PATH = "leaf_disease_model.keras"
 
-if not os.path.exists(MODEL_PATH):
-    url = "https://drive.google.com/uc?export=download&id=17A2-oOO8PebUGKIsLhkOS8d5G440EJ89"
-    
-    response = requests.get(url)
-    with open(MODEL_PATH, "wb") as f:
-        f.write(response.content)
+# ---------------------------
+# Load TFLite model (FAST)
+# ---------------------------
+@st.cache_resource
+def load_model():
+    interpreter = tf.lite.Interpreter(model_path="model.tflite")
+    interpreter.allocate_tensors()
+    return interpreter
 
-model = tf.keras.models.load_model(MODEL_PATH, compile=False, safe_mode=False)
-# Load model once
+interpreter = load_model()
 
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
+# ---------------------------
 # Prediction function
+# ---------------------------
 def model_prediction(test_image):
-    image=Image.open(test_image)
-    image = image.resize((180,180))
+    image = Image.open(test_image).convert("RGB")
+    image = image.resize((180, 180))
 
-    input_arr = np.array(image)/255.0
-    input_arr = np.expand_dims(input_arr, axis=0)
+    input_arr = np.array(image) / 255.0
+    input_arr = np.expand_dims(input_arr, axis=0).astype(np.float32)
 
-    prediction = model.predict(input_arr)
-    result_index = np.argmax(prediction)
+    interpreter.set_tensor(input_details[0]['index'], input_arr)
+    interpreter.invoke()
+
+    output = interpreter.get_tensor(output_details[0]['index'])
+    result_index = np.argmax(output)
 
     return result_index
 
-
+# ---------------------------
 # Sidebar
+# ---------------------------
 st.sidebar.title("Dashboard")
 app_mode = st.sidebar.selectbox(
     "Select Page",
-    ["Home","About","Disease Recognition"]
+    ["Home", "About", "Disease Recognition"]
 )
 
+# ---------------------------
 # Home Page
-if(app_mode=="Home"):
-
+# ---------------------------
+if app_mode == "Home":
     st.header("🍃 APPLE PLANT DISEASE RECOGNITION SYSTEM")
 
     st.markdown("""
 Welcome to the **Apple Plant Disease Recognition System**.
 
-Our system helps in identifying apple plant diseases efficiently.
-Upload an image of an apple leaf and the model will detect the disease.
+Upload an apple leaf image and the model will detect the disease.
 
-### How It Works
-
+### Steps
 1. Go to **Disease Recognition**
-2. Upload a leaf image
+2. Upload image
 3. Click **Predict**
-4. The system will show the predicted disease
 
-### Why Use This System
-
+### Features
 - Fast detection
-- Simple interface
-- Machine Learning based prediction
+- Simple UI
+- ML-based prediction
 """)
 
-
+# ---------------------------
 # About Page
-elif(app_mode=="About"):
-
+# ---------------------------
+elif app_mode == "About":
     st.header("About")
 
     st.markdown("""
-### Dataset Information
+### Dataset
 
-The dataset contains images of healthy and diseased apple leaves.
+Classes:
+- Apple Healthy
+- Apple Scab
+- Apple Cedar Rust
+- Apple Black Rot
 
-Classes used in this project:
-
-1. Apple Healthy
-2. Apple Scab
-3. Apple Cedar Rust
-4. Apple Black Rot
-
-The model was trained using a **Convolutional Neural Network (CNN)**.
+Model: CNN
 """)
 
-
+# ---------------------------
 # Prediction Page
-elif(app_mode=="Disease Recognition"):
+# ---------------------------
+elif app_mode == "Disease Recognition":
 
     st.header("🍃 Apple Leaf Disease Detection")
 
@@ -93,13 +95,12 @@ elif(app_mode=="Disease Recognition"):
 
     if test_image is not None:
 
-        if st.button("Show Image"):
-            image = Image.open(test_image)
-            st.image(image, width=400)
+        image = Image.open(test_image)
+        st.image(image, width=400)
 
         if st.button("Predict"):
 
-            with st.spinner("Analyzing Leaf Image..."):
+            with st.spinner("Analyzing..."):
 
                 result_index = model_prediction(test_image)
 
@@ -110,9 +111,7 @@ elif(app_mode=="Disease Recognition"):
                     "Apple Black Rot"
                 ]
 
-                st.success(
-                    "Model Prediction: {}".format(class_names[result_index])
-                )
+                st.success(f"Prediction: {class_names[result_index]}")
 
     else:
-        st.info("Please upload an image to continue.")
+        st.info("Please upload an image.")
