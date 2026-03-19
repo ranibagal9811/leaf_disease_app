@@ -4,10 +4,10 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
-MODEL_PATH = "leaf_disease_model.h5"
+MODEL_PATH = "leaf_disease_model.keras"
 
 if not os.path.exists(MODEL_PATH):
-    url = "https://drive.google.com/uc?export=download&id=1YH_P1G9k_ekC7eoYqEowJkG0Yo2P03VX"
+    url = "https://drive.google.com/uc?export=download&id=17A2-oOO8PebUGKIsLhkOS8d5G440EJ89"
     
     response = requests.get(url)
     with open(MODEL_PATH, "wb") as f:
