@@ -1,5 +1,5 @@
-import gdown
 import os
+import requests
 import streamlit as st
 import tensorflow as tf
 import numpy as np
