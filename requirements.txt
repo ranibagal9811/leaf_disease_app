@@ -2,5 +2,3 @@ streamlit
 tensorflow-cpu==2.12.0
 numpy==1.23.5
 pillow
-requests
-h5py==3.8.0
