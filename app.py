@@ -8,7 +8,7 @@ MODEL_PATH = "leaf_disease_model.h5"
 
 if not os.path.exists(MODEL_PATH):
     url = "https://drive.google.com/uc?id=1fndr_9v0H5rngbIyamK_Ki2EbYX2R2CU"
-    gdown.download(url, MODEL_PATH, quiet=False)
+    gdown.download(url, MODEL_PATH, quiet=False,fuzzy=True)
 
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 # Load model once
