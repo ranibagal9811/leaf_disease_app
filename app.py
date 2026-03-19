@@ -7,8 +7,8 @@ from PIL import Image
 MODEL_PATH = "leaf_disease_model.h5"
 
 if not os.path.exists(MODEL_PATH):
-    url = "https://drive.google.com/uc?id=1YH_P1G9k_ekC7eoYqEowJkG0Yo2P03VX"
-    gdown.download(url, MODEL_PATH, quiet=False,fuzzy=True)
+    file_id = "1YH_P1G9k_ekC7eoYqEowJkG0Yo2P03VX"
+    gdown.download(id=file_id, output=MODEL_PATH, quiet=False)
 
 model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 # Load model once
